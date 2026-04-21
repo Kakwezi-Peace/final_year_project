@@ -60,6 +60,7 @@ public class CustomerService {
         return customerRepository.findAll(pageable).map(this::toResponse);
     }
 
+
     @Transactional(readOnly = true)
     public Page<CustomerResponse> searchCustomers(String query, Pageable pageable) {
         return customerRepository.search(query, pageable).map(this::toResponse);
