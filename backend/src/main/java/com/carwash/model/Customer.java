@@ -44,6 +44,13 @@ public class Customer {
     @Column(updatable = false)
     private LocalDateTime registeredAt;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    @Builder.Default
+    private boolean deletionRequested = false;
+
+    @Column
+    private LocalDateTime deletionRequestedAt;
+
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Vehicle> vehicles;
 

@@ -148,7 +148,7 @@ const Navbar = () => {
                   className="btn btn-primary"
                   style={{ padding: '0.6rem 1.5rem', fontSize: '0.9rem', marginLeft: '0.5rem', borderRadius: '50px' }}
                 >
-                  Sign In
+                  Login
                 </Link>
               </>
             ) : (

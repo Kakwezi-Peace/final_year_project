@@ -452,45 +452,143 @@ const BookingModal = ({ onClose, onSuccess, editData = null }) => {
           )}
 
           {step === 'payment' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <span style={{ color: '#666', fontSize: '0.9rem', fontWeight: '600' }}>Checkout Summary</span>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginTop: '0.5rem' }}>
-                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                     {selectedServices.map(s => <span key={s.id} style={{ fontSize: '1rem', color: 'white', fontWeight: '700' }}>• {s.name}</span>)}
-                   </div>
-                   <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '2rem', fontWeight: '900', color: '#facc15' }}>RWF {totalPriceAggregated.toLocaleString()}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>Inclusive of taxes</div>
-                   </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+              {/* ── Checkout Summary ── */}
+              <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.25rem 1.5rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <span style={{ color: '#555', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Checkout Summary</span>
+                  {selectedServices.map(s => (
+                    <span key={s.id} style={{ fontSize: '0.95rem', color: 'white', fontWeight: '700' }}>• {s.name}</span>
+                  ))}
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#facc15', lineHeight: 1 }}>RWF {totalPriceAggregated.toLocaleString()}</div>
+                  <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.25)', marginTop: '3px' }}>Inclusive of taxes</div>
                 </div>
               </div>
 
-              {/* Providers UI unchanged */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <label style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600' }}>Select MoMo Provider</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div onClick={() => setPaymentMethod('MTN_MOMO')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', padding: '1.5rem', borderRadius: '16px', cursor: 'pointer', background: paymentMethod === 'MTN_MOMO' ? 'rgba(250,204,21,0.08)' : 'rgba(255,255,255,0.02)', border: `2px solid ${paymentMethod === 'MTN_MOMO' ? '#facc15' : 'rgba(255,255,255,0.05)'}` }}>
-                    <div style={{ width: '48px', height: '48px', background: '#facc15', borderRadius: '12px', color: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.2rem' }}>MTN</div>
-                    <span style={{ fontWeight: '700', fontSize: '0.9rem' }}>MTN MoMo</span>
-                  </div>
-                  <div onClick={() => setPaymentMethod('AIRTEL_MONEY')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', padding: '1.5rem', borderRadius: '16px', cursor: 'pointer', background: paymentMethod === 'AIRTEL_MONEY' ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.02)', border: `2px solid ${paymentMethod === 'AIRTEL_MONEY' ? '#ef4444' : 'rgba(255,255,255,0.05)'}` }}>
-                    <div style={{ width: '48px', height: '48px', background: '#ef4444', borderRadius: '12px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.2rem' }}>Artl</div>
-                    <span style={{ fontWeight: '700', fontSize: '0.9rem' }}>Airtel Money</span>
-                  </div>
+              {/* ── Pay To ── */}
+              <div style={{ background: 'rgba(227,6,19,0.06)', border: '1px solid rgba(227,6,19,0.2)', borderRadius: '12px', padding: '0.9rem 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '0.65rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' }}>Pay To · RUBIS Car Wash Kigali</div>
+                  <div style={{ fontWeight: '900', fontSize: '1.4rem', color: '#facc15', letterSpacing: '3px' }}>0783 672 723</div>
                 </div>
-              </div>
-
-              <div>
-                <label style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600', marginBottom: '0.75rem', display: 'block' }}>Payment Phone Number</label>
-                <input className="input-field" placeholder="0788..." value={mobileNumber} onChange={e => setMobileNumber(e.target.value)} style={{ width: '100%', textAlign: 'center', fontSize: '1.5rem', fontWeight: '900', letterSpacing: '3px', background: 'black', padding: '1.25rem', border: '2px solid rgba(255,255,255,0.1)', color: '#facc15' }} />
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <button className="btn btn-primary" onClick={handleConfirmPayment} disabled={submitting || !mobileNumber} style={{ padding: '1.25rem', background: '#facc15', color: '#1a1a1a', fontWeight: '900', borderRadius: '16px', fontSize: '1.1rem' }}>
-                  PAY NOW
+                <button
+                  onClick={() => { navigator.clipboard.writeText('0783672723'); }}
+                  style={{ fontSize: '0.7rem', fontWeight: '800', background: 'rgba(250,204,21,0.1)', border: '1px solid rgba(250,204,21,0.25)', color: '#facc15', padding: '5px 12px', borderRadius: '8px', cursor: 'pointer' }}
+                >
+                  Copy
                 </button>
-                <button onClick={() => setStep('form')} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}>← Go back</button>
+              </div>
+
+              {/* ── Provider Selection ── */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                <label style={{ fontSize: '0.75rem', color: '#666', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Select MoMo Provider</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div onClick={() => setPaymentMethod('MTN_MOMO')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem', padding: '1.1rem', borderRadius: '14px', cursor: 'pointer', background: paymentMethod === 'MTN_MOMO' ? 'rgba(250,204,21,0.08)' : 'rgba(255,255,255,0.02)', border: `2px solid ${paymentMethod === 'MTN_MOMO' ? '#facc15' : 'rgba(255,255,255,0.06)'}`, transition: 'all 0.15s' }}>
+                    <div style={{ width: '44px', height: '44px', background: '#facc15', borderRadius: '11px', color: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.85rem' }}>MTN</div>
+                    <span style={{ fontWeight: '800', fontSize: '0.85rem' }}>MTN MoMo</span>
+                    {paymentMethod === 'MTN_MOMO' && <span style={{ fontSize: '0.6rem', color: '#facc15', fontWeight: '800', background: 'rgba(250,204,21,0.15)', padding: '1px 8px', borderRadius: '20px' }}>SELECTED</span>}
+                  </div>
+                  <div onClick={() => setPaymentMethod('AIRTEL_MONEY')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem', padding: '1.1rem', borderRadius: '14px', cursor: 'pointer', background: paymentMethod === 'AIRTEL_MONEY' ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.02)', border: `2px solid ${paymentMethod === 'AIRTEL_MONEY' ? '#ef4444' : 'rgba(255,255,255,0.06)'}`, transition: 'all 0.15s' }}>
+                    <div style={{ width: '44px', height: '44px', background: '#ef4444', borderRadius: '11px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.85rem' }}>Artl</div>
+                    <span style={{ fontWeight: '800', fontSize: '0.85rem' }}>Airtel Money</span>
+                    {paymentMethod === 'AIRTEL_MONEY' && <span style={{ fontSize: '0.6rem', color: '#ef4444', fontWeight: '800', background: 'rgba(239,68,68,0.15)', padding: '1px 8px', borderRadius: '20px' }}>SELECTED</span>}
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Step-by-step guide ── */}
+              {paymentMethod && (() => {
+                const isMtn = paymentMethod === 'MTN_MOMO';
+                const accentColor = isMtn ? '#facc15' : '#ef4444';
+                const accentBg   = isMtn ? 'rgba(250,204,21,0.08)' : 'rgba(239,68,68,0.08)';
+                const ussd       = isMtn
+                  ? `*182*1*1*0783672723*${totalPriceAggregated}#`
+                  : `*185*1*0783672723*${totalPriceAggregated}#`;
+                const steps = isMtn ? [
+                  { text: 'Dial the USSD code on your MTN line', code: ussd },
+                  { text: 'Or manually: dial *182*1*1# and follow the prompts' },
+                  { text: 'Enter recipient number: 0783672723 (RUBIS Car Wash)' },
+                  { text: `Enter amount: RWF ${totalPriceAggregated.toLocaleString()}` },
+                  { text: 'Enter your MTN MoMo PIN to confirm' },
+                  { text: 'Enter your phone number below and tap PAY NOW', highlight: true },
+                ] : [
+                  { text: 'Dial the USSD code on your Airtel line', code: ussd },
+                  { text: 'Or manually: dial *185# → Send Money' },
+                  { text: 'Enter recipient number: 0783672723 (RUBIS Car Wash)' },
+                  { text: `Enter amount: RWF ${totalPriceAggregated.toLocaleString()}` },
+                  { text: 'Enter your Airtel Money PIN to confirm' },
+                  { text: 'Enter your phone number below and tap PAY NOW', highlight: true },
+                ];
+                return (
+                  <div style={{ background: accentBg, border: `1px solid ${accentColor}22`, borderRadius: '14px', padding: '1.1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: '900', color: accentColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                        How to Pay — {isMtn ? 'MTN MoMo' : 'Airtel Money'}
+                      </span>
+                    </div>
+                    {steps.map((s, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                        <div style={{ width: '22px', height: '22px', borderRadius: '50%', flexShrink: 0, marginTop: '1px',
+                          background: s.highlight ? '#e30613' : `${accentColor}22`,
+                          color: s.highlight ? 'white' : accentColor,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '0.62rem', fontWeight: '900' }}>
+                          {i + 1}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <span style={{ fontSize: '0.83rem', color: s.highlight ? 'white' : 'rgba(255,255,255,0.75)', fontWeight: s.highlight ? '700' : '500', lineHeight: 1.45 }}>
+                            {s.text}
+                          </span>
+                          {s.code && (
+                            <div style={{ marginTop: '6px', background: 'rgba(0,0,0,0.45)', borderRadius: '8px', padding: '7px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                              <code style={{ fontFamily: 'monospace', fontSize: '0.9rem', fontWeight: '900', color: '#4ade80', letterSpacing: '0.04em' }}>{s.code}</code>
+                              <button
+                                onClick={() => navigator.clipboard.writeText(s.code)}
+                                style={{ fontSize: '0.62rem', fontWeight: '800', background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.25)', color: '#4ade80', padding: '3px 9px', borderRadius: '6px', cursor: 'pointer', flexShrink: 0 }}
+                              >
+                                Copy
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+
+              {/* ── Your phone number ── */}
+              <div>
+                <label style={{ fontSize: '0.75rem', color: '#666', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.6rem', display: 'block' }}>
+                  Your Payment Phone Number
+                </label>
+                <input
+                  className="input-field"
+                  placeholder="e.g. 0788 000 000"
+                  value={mobileNumber}
+                  onChange={e => setMobileNumber(e.target.value)}
+                  style={{ width: '100%', textAlign: 'center', fontSize: '1.4rem', fontWeight: '900', letterSpacing: '3px', background: 'rgba(0,0,0,0.4)', padding: '1rem', border: `2px solid ${mobileNumber ? 'rgba(250,204,21,0.4)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '12px', color: '#facc15', transition: 'border 0.2s' }}
+                />
+                <div style={{ fontSize: '0.72rem', color: '#555', marginTop: '5px', textAlign: 'center' }}>
+                  The number you used to make the MoMo payment above
+                </div>
+              </div>
+
+              {/* ── Actions ── */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                <button
+                  onClick={handleConfirmPayment}
+                  disabled={submitting || !mobileNumber || !paymentMethod}
+                  style={{ padding: '1.1rem', background: submitting || !mobileNumber || !paymentMethod ? 'rgba(250,204,21,0.3)' : '#facc15', color: '#1a1a1a', fontWeight: '900', borderRadius: '14px', fontSize: '1rem', border: 'none', cursor: submitting || !mobileNumber || !paymentMethod ? 'default' : 'pointer', transition: 'background 0.2s', letterSpacing: '0.04em' }}
+                >
+                  {submitting ? 'CONFIRMING...' : 'CONFIRM PAYMENT'}
+                </button>
+                <button onClick={() => setStep('form')} style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600', padding: '0.5rem' }}>
+                  ← Go back
+                </button>
               </div>
             </div>
           )}

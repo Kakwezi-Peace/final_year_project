@@ -45,6 +45,9 @@ public class User implements UserDetails {
     @Column
     private boolean enabled = true;
 
+    @Column(name = "is_guest", nullable = false, columnDefinition = "boolean default false")
+    private boolean isGuest = false;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

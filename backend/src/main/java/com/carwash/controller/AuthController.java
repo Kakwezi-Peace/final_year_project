@@ -6,6 +6,7 @@ import com.carwash.dto.RegisterRequest;
 import com.carwash.model.Role;
 import com.carwash.model.User;
 import com.carwash.repository.CustomerRepository;
+import com.carwash.repository.UserRepository;
 import com.carwash.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +28,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user account (CUSTOMER, STAFF, MANAGER, or ADMIN)")
@@ -63,5 +65,35 @@ public class AuthController {
         }
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/guest-register")
+    @Operation(summary = "Register as a guest using phone and name")
+    public ResponseEntity<?> guestRegister(@Valid @RequestBody com.carwash.dto.GuestRegisterRequest request) {
+        try {
+            RegisterRequest regRequest = new RegisterRequest();
+            // Use phone number as username and password for easy login
+            regRequest.setUsername(request.getPhone());
+            regRequest.setPassword(request.getPhone());
+            regRequest.setFullName(request.getFullName());
+            regRequest.setPhone(request.getPhone());
+            regRequest.setRole(Role.CUSTOMER);
+            
+            // Generate dummy email to satisfy constraints
+            String uuid = java.util.UUID.randomUUID().toString().substring(0, 8);
+            regRequest.setEmail("guest_" + uuid + "@rubis.com");
+            
+            AuthResponse response = authService.register(regRequest);
+            
+            // Mark user as guest
+            User user = userRepository.findById(response.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found after registration"));
+            user.setGuest(true);
+            userRepository.save(user);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

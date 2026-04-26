@@ -2,6 +2,7 @@ package com.carwash.service;
 
 import com.carwash.dto.BookingRequest;
 import com.carwash.dto.BookingResponse;
+import com.carwash.dto.GuestBookingRequest;
 import com.carwash.model.*;
 import com.carwash.repository.BookingRepository;
 import com.carwash.repository.CustomerRepository;
@@ -135,6 +136,39 @@ public class BookingService {
         }
 
         log.info("Booking created: {} for customer '{}'", ref, customer.getFullName());
+        return toResponse(booking);
+    }
+
+
+    // CREATE GUEST BOOKING (no login required)
+
+
+    @Transactional
+    public BookingResponse createGuestBooking(GuestBookingRequest request) {
+        com.carwash.model.Service service = washServiceService.findById(request.getServiceId());
+        java.math.BigDecimal totalAmount = service.getPrice();
+
+        String ref = generateReference();
+
+        Booking booking = Booking.builder()
+                .bookingReference(ref)
+                .customer(null)          // No customer record for guests
+                .vehicle(null)           // No vehicle record for guests
+                .service(service)
+                .additionalServices(new java.util.ArrayList<>())
+                .assignedEmployee(null)
+                .status(BookingStatus.PENDING)
+                .scheduledAt(request.getScheduledAt())
+                .totalAmount(totalAmount)
+                .notes(request.getNotes())
+                .isGuest(true)
+                .guestName(request.getGuestName())
+                .guestPhone(request.getGuestPhone())
+                .guestVehiclePlate(request.getGuestVehiclePlate())
+                .build();
+
+        booking = bookingRepository.save(booking);
+        log.info("Guest booking created: {} for guest '{}'", ref, request.getGuestName());
         return toResponse(booking);
     }
 
@@ -286,6 +320,15 @@ public class BookingService {
     }
 
     @Transactional
+    public BookingResponse unassignEmployee(Long bookingId) {
+        Booking booking = findById(bookingId);
+        booking.setAssignedEmployee(null);
+        booking = bookingRepository.save(booking);
+        log.info("Employee unassigned from booking {}", booking.getBookingReference());
+        return toResponse(booking);
+    }
+
+    @Transactional
     public BookingResponse updateBooking(Long id, BookingRequest request, User currentUser) {
         Booking booking = findById(id);
         assertCanAccess(booking, currentUser);
@@ -364,7 +407,7 @@ public class BookingService {
      */
     private void validateStatusTransition(BookingStatus current, BookingStatus next) {
         boolean valid = switch (current) {
-            case PENDING     -> next == BookingStatus.CONFIRMED   || next == BookingStatus.CANCELLED;
+            case PENDING     -> next == BookingStatus.CONFIRMED   || next == BookingStatus.IN_PROGRESS || next == BookingStatus.CANCELLED;
             case CONFIRMED   -> next == BookingStatus.IN_PROGRESS || next == BookingStatus.CANCELLED;
             case IN_PROGRESS -> next == BookingStatus.COMPLETED   || next == BookingStatus.CANCELLED;
             case COMPLETED, CANCELLED -> false;
@@ -377,8 +420,8 @@ public class BookingService {
 
     private String generateReference() {
         String datePart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        long count = bookingRepository.count() + 1;
-        return String.format("CW-%s-%04d", datePart, count);
+        String randomPart = java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+        return String.format("CW-%s-%s", datePart, randomPart);
     }
 
     public BookingResponse toResponse(Booking b) {
@@ -392,14 +435,22 @@ public class BookingService {
                     .amount(p.getAmount())
                     .build();
         }
+
+        // Safely resolve customer/vehicle (null for guest bookings)
+        Long customerId = b.isGuest() ? null : (b.getCustomer() != null ? b.getCustomer().getId() : null);
+        String customerName = b.isGuest() ? (b.getGuestName() + " (Guest)") : (b.getCustomer() != null ? b.getCustomer().getFullName() : "Unknown");
+        Long vehicleId = b.isGuest() ? null : (b.getVehicle() != null ? b.getVehicle().getId() : null);
+        String vehiclePlate = b.isGuest() ? b.getGuestVehiclePlate() : (b.getVehicle() != null ? b.getVehicle().getLicensePlate() : "");
+        String vehicleMakeModel = b.isGuest() ? "Guest Vehicle" : (b.getVehicle() != null ? b.getVehicle().getMake() + " " + b.getVehicle().getModel() : "");
+
         return BookingResponse.builder()
                 .id(b.getId())
                 .bookingReference(b.getBookingReference())
-                .customerId(b.getCustomer().getId())
-                .customerName(b.getCustomer().getFullName())
-                .vehicleId(b.getVehicle().getId())
-                .vehicleLicensePlate(b.getVehicle().getLicensePlate())
-                .vehicleMakeModel(b.getVehicle().getMake() + " " + b.getVehicle().getModel())
+                .customerId(customerId)
+                .customerName(customerName)
+                .vehicleId(vehicleId)
+                .vehicleLicensePlate(vehiclePlate)
+                .vehicleMakeModel(vehicleMakeModel)
                 .serviceId(b.getService().getId())
                 .serviceName(b.getService().getName())
                 .serviceCategory(b.getService().getCategory())
@@ -414,6 +465,10 @@ public class BookingService {
                 .notes(b.getNotes())
                 .createdAt(b.getCreatedAt())
                 .payment(paymentSummary)
+                .isGuest(b.isGuest())
+                .guestName(b.getGuestName())
+                .guestPhone(b.getGuestPhone())
+                .guestVehiclePlate(b.getGuestVehiclePlate())
                 .build();
     }
 }

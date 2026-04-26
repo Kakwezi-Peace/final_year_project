@@ -37,6 +37,12 @@ public class BookingResponse {
     private LocalDateTime createdAt;
     private PaymentSummary payment;
 
+    // Guest booking fields
+    private boolean isGuest;
+    private String guestName;
+    private String guestPhone;
+    private String guestVehiclePlate;
+
     @Data
     @Builder
     @NoArgsConstructor

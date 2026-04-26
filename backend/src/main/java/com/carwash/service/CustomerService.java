@@ -93,6 +93,33 @@ public class CustomerService {
         log.info("Customer deleted: id={}", id);
     }
 
+    @Transactional
+    public void requestDeletionByUserId(Long userId) {
+        Customer customer = customerRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Customer profile not found"));
+        customer.setDeletionRequested(true);
+        customer.setDeletionRequestedAt(java.time.LocalDateTime.now());
+        customerRepository.save(customer);
+        log.info("Deletion requested for customer id={}", customer.getId());
+    }
+
+    @Transactional
+    public void cancelDeletionRequestByUserId(Long userId) {
+        Customer customer = customerRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Customer profile not found"));
+        customer.setDeletionRequested(false);
+        customer.setDeletionRequestedAt(null);
+        customerRepository.save(customer);
+        log.info("Deletion request cancelled for customer id={}", customer.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public CustomerResponse getCustomerByUserId(Long userId) {
+        Customer customer = customerRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Customer profile not found"));
+        return toResponse(customer);
+    }
+
     public Customer findById(Long id) {
         return customerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + id));
@@ -121,6 +148,8 @@ public class CustomerService {
                 .registeredAt(c.getRegisteredAt())
                 .totalVehicles(c.getVehicles() != null ? c.getVehicles().size() : 0)
                 .totalBookings(c.getBookings() != null ? c.getBookings().size() : 0)
+                .deletionRequested(c.isDeletionRequested())
+                .deletionRequestedAt(c.getDeletionRequestedAt())
                 .build();
     }
 }

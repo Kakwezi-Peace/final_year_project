@@ -25,4 +25,6 @@ public class CustomerResponse {
     private LocalDateTime registeredAt;
     private int totalVehicles;
     private int totalBookings;
+    private boolean deletionRequested;
+    private LocalDateTime deletionRequestedAt;
 }

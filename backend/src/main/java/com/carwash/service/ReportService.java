@@ -41,13 +41,13 @@ public class ReportService {
         BigDecimal todayRevenue = paymentRepository.totalPaidBetween(todayStart, todayEnd);
         BigDecimal weeklyRevenue = paymentRepository.totalPaidBetween(weekStart, todayEnd);
 
-        BigDecimal mtnRevenue = paymentRepository.totalPaidByMethod(com.carwash.model.PaymentMethod.MTN_MOMO);
-        BigDecimal airtelRevenue = paymentRepository.totalPaidByMethod(com.carwash.model.PaymentMethod.AIRTEL_MONEY);
+        BigDecimal mtnRevenue = paymentRepository.totalPaidByMethodBetween(com.carwash.model.PaymentMethod.MTN_MOMO, weekStart, todayEnd);
+        BigDecimal airtelRevenue = paymentRepository.totalPaidByMethodBetween(com.carwash.model.PaymentMethod.AIRTEL_MONEY, weekStart, todayEnd);
 
         long totalVehicles  = vehicleRepository.count();
         long totalServices  = serviceRepository.count();
         long totalEmployees = employeeRepository.count();
-        long todayCars      = bookingRepository.findByScheduledAtBetween(todayStart, todayEnd).size();
+        long todayCars      = bookingRepository.countByCreatedAtBetween(todayStart, todayEnd);
 
         Map<String, Long> bookingsByStatus = Map.of(
             "PENDING",     pendingBookings,

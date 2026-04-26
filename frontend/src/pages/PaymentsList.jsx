@@ -38,8 +38,8 @@ const PaymentsList = () => {
     try {
       const qParam   = query ? `&q=${encodeURIComponent(query)}` : '';
       const endpoint = isCustomer
-        ? `/payments/my-payments?page=${pageIdx}&size=10${qParam}`
-        : `/payments?page=${pageIdx}&size=10${qParam}`;
+        ? `/payments/my-payments?page=${pageIdx}&size=10&sort=createdAt,desc${qParam}`
+        : `/payments?page=${pageIdx}&size=10&sort=createdAt,desc${qParam}`;
 
       const res  = await api.get(endpoint);
       const data = res.data.content || res.data || [];
@@ -368,7 +368,7 @@ const PaymentsList = () => {
         <div className="glass-panel card-hover" style={{ padding: '1.5rem', borderLeft: '4px solid #facc15' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Total MTN MoMo</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Weekly MTN MoMo</p>
               <h3 style={{ fontSize: '1.5rem', fontWeight: '900', margin: 0 }}>{stats.mtnShare?.toLocaleString()} <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>RWF</span></h3>
             </div>
             <div style={{ padding: '6px', background: 'rgba(250,204,21,0.1)', color: '#facc15', borderRadius: '6px', fontSize: '0.65rem', fontWeight: '900' }}>MTN</div>
@@ -377,7 +377,7 @@ const PaymentsList = () => {
         <div className="glass-panel card-hover" style={{ padding: '1.5rem', borderLeft: '4px solid #ef4444' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Total Airtel Money</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Weekly Airtel Money</p>
               <h3 style={{ fontSize: '1.5rem', fontWeight: '900', margin: 0 }}>{stats.airtelShare?.toLocaleString()} <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>RWF</span></h3>
             </div>
             <div style={{ padding: '6px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', borderRadius: '6px', fontSize: '0.65rem', fontWeight: '900' }}>AIR</div>

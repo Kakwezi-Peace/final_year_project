@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 
-const Login = () => {
-  const [formData, setFormData] = useState({ username: '', password: '' });
+const GuestRegister = () => {
+  const [formData, setFormData] = useState({ fullName: '', phone: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Ensure a clean start – clear any existing sessions before logging in
   React.useEffect(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -24,24 +23,18 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const { data } = await api.post('/auth/login', formData);
+      const { data } = await api.post('/auth/guest-register', formData);
       localStorage.setItem('token', data.accessToken);
       
       const profileResponse = await api.get('/auth/me');
       const user = profileResponse.data;
       localStorage.setItem('user', JSON.stringify(user));
       
-      // Role-Based Direct Navigation
-      if (user.role === 'STAFF') {
-        navigate('/queue'); // Staff goes straight to work
-      } else if (user.role === 'ADMIN' || user.role === 'MANAGER') {
-        navigate('/dashboard'); // Management goes to reports
-      } else {
-        navigate('/dashboard'); // Customers see their status
-      }
+      // Guest immediately goes to dashboard with booking modal open
+      navigate('/dashboard?book=true');
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || 'Invalid username or password. Please try again.');
+      setError(err.response?.data?.error || 'Failed to register as guest. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -64,7 +57,6 @@ const Login = () => {
         background: '#020617',
         overflow: 'hidden'
       }} className="hide-mobile">
-        {/* The Branded Image */}
         <img 
           src="/assets/rubis-logo.webp" 
           alt="Rubis Station" 
@@ -96,15 +88,15 @@ const Login = () => {
             RUBIS
           </div>
           <h1 style={{ fontSize: '3.5rem', fontWeight: '900', color: 'white', lineHeight: 1.1, marginBottom: '1.5rem' }}>
-            The Rubis <br /> <span style={{ color: 'var(--rubis-red)' }}>Standard</span>
+            Book as a <br /> <span style={{ color: 'var(--rubis-red)' }}>Guest</span>
           </h1>
           <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', maxWidth: '440px' }}>
-            Rwanda's leading professional car wash and detailing service. Expert care for your vehicle, backed by excellence. We ensure your car looks its very best on every single visit!
+            Quickly secure your spot without creating a full account. Your details will be safely removed 7 days after your booking.
           </p>
         </div>
       </div>
 
-      {/* RIGHT SIDE: LOGIN FORM */}
+      {/* RIGHT SIDE: GUEST FORM */}
       <div style={{
         flex: '0 0 520px',
         display: 'flex',
@@ -118,8 +110,8 @@ const Login = () => {
         <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '400px' }}>
           
           <div style={{ marginBottom: '2.5rem', textAlign: 'left' }}>
-            <h2 style={{ fontSize: '2.2rem', fontWeight: '900', marginBottom: '0.5rem' }}>Welcome Home</h2>
-            <p style={{ color: 'var(--text-secondary)' }}>Sign in to manage your bookings</p>
+            <h2 style={{ fontSize: '2.2rem', fontWeight: '900', marginBottom: '0.5rem' }}>Guest Booking</h2>
+            <p style={{ color: 'var(--text-secondary)' }}>Enter your details to proceed to booking</p>
           </div>
 
           {error && (
@@ -130,34 +122,32 @@ const Login = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="input-group">
-              <label className="input-label">Username</label>
+              <label className="input-label">Full Name</label>
               <div style={{ position: 'relative' }}>
                 <input
                   type="text"
-                  name="username"
+                  name="fullName"
                   className="input-field"
                   style={{ height: '52px' }}
-                  placeholder="USERNAME"
-                  value={formData.username}
+                  placeholder="John Doe"
+                  value={formData.fullName}
                   onChange={handleChange}
-                  autoComplete="username"
                   required
                 />
               </div>
             </div>
 
             <div className="input-group">
-              <label className="input-label">Password</label>
+              <label className="input-label">Phone Number</label>
               <div style={{ position: 'relative' }}>
                 <input
-                  type="password"
-                  name="password"
+                  type="tel"
+                  name="phone"
                   className="input-field"
                   style={{ height: '52px' }}
-                  placeholder="PASSWORD"
-                  value={formData.password}
+                  placeholder="078..."
+                  value={formData.phone}
                   onChange={handleChange}
-                  autoComplete="current-password"
                   required
                 />
               </div>
@@ -169,7 +159,10 @@ const Login = () => {
               style={{ width: '100%', marginTop: '1.5rem', height: '52px', fontSize: '1.05rem' }}
               disabled={loading}
             >
-              {loading ? 'AUTHENTICATING...' : 'LOGIN'}
+              {loading
+                ? 'PROCESSING...'
+                : 'CONTINUE TO BOOKING'
+              }
             </button>
           </form>
 
@@ -180,9 +173,14 @@ const Login = () => {
             textAlign: 'center',
           }}>
             <p style={{ color: 'var(--text-secondary)' }}>
-              New to Rubis?{' '}
-              <Link to="/register" style={{ color: 'var(--rubis-red)', fontWeight: '800', textDecoration: 'none' }}>
-                Create account →
+              Already have an account?{' '}
+              <Link to="/login" style={{ color: 'var(--rubis-red)', fontWeight: '800', textDecoration: 'none' }}>
+                Sign In →
+              </Link>
+            </p>
+            <p style={{ color: 'var(--text-secondary)', marginTop: '1rem' }}>
+              <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>
+                ← Back to Home
               </Link>
             </p>
           </div>
@@ -192,4 +190,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default GuestRegister;

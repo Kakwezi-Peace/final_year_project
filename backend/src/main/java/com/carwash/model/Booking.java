@@ -25,11 +25,11 @@ public class Booking {
     private String bookingReference;   // e.g. CW-2024-0001
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "customer_id", nullable = true)
     private Customer customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vehicle_id", nullable = false)
+    @JoinColumn(name = "vehicle_id", nullable = true)
     private Vehicle vehicle;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -67,6 +67,20 @@ public class Booking {
 
     @Column(length = 500)
     private String notes;
+
+    // ─── Guest Booking Fields ───────────────────────────────────────────────────
+    @Column(name = "is_guest", nullable = false, columnDefinition = "boolean default false")
+    private boolean isGuest = false;
+
+    @Column(name = "guest_name", length = 200)
+    private String guestName;
+
+    @Column(name = "guest_phone", length = 30)
+    private String guestPhone;
+
+    @Column(name = "guest_vehicle_plate", length = 50)
+    private String guestVehiclePlate;
+    // ───────────────────────────────────────────────────────────────────────────
 
     @Column(updatable = false)
     private LocalDateTime createdAt;

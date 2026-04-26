@@ -53,4 +53,10 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p " +
            "WHERE p.status = 'PAID' AND p.paymentMethod = :method")
     java.math.BigDecimal totalPaidByMethod(@Param("method") com.carwash.model.PaymentMethod method);
+
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p " +
+           "WHERE p.status = 'PAID' AND p.paymentMethod = :method AND p.paidAt BETWEEN :start AND :end")
+    java.math.BigDecimal totalPaidByMethodBetween(@Param("method") com.carwash.model.PaymentMethod method,
+                                                  @Param("start") LocalDateTime start,
+                                                  @Param("end") LocalDateTime end);
 }

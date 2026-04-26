@@ -2,6 +2,7 @@ package com.carwash.controller;
 
 import com.carwash.dto.CustomerRequest;
 import com.carwash.dto.CustomerResponse;
+import com.carwash.model.User;
 import com.carwash.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +14,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -64,5 +66,28 @@ public class CustomerController {
     public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
         customerService.deleteCustomer(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "Get the logged-in customer's own profile")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<CustomerResponse> getMyProfile(@AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(customerService.getCustomerByUserId(currentUser.getId()));
+    }
+
+    @PostMapping("/me/request-deletion")
+    @Operation(summary = "Customer requests their own account deletion")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<Void> requestDeletion(@AuthenticationPrincipal User currentUser) {
+        customerService.requestDeletionByUserId(currentUser.getId());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/me/request-deletion")
+    @Operation(summary = "Customer cancels their pending deletion request")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<Void> cancelDeletionRequest(@AuthenticationPrincipal User currentUser) {
+        customerService.cancelDeletionRequestByUserId(currentUser.getId());
+        return ResponseEntity.ok().build();
     }
 }

@@ -88,13 +88,36 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="animate-fade-in-up delay-300" style={{ display: 'flex', justifyContent: 'center' }}>
+          <div className="animate-fade-in-up delay-300" style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
             <button
               onClick={handleBookClick}
               className="btn btn-primary"
               style={{ padding: '1rem 3.5rem', fontSize: '1.15rem', borderRadius: '50px', fontWeight: '900', letterSpacing: '0.05em' }}
             >
               Book Now
+            </button>
+            <button
+              onClick={() => navigate('/guest-booking')}
+              className="btn"
+              style={{ 
+                padding: '1rem 3.5rem', 
+                fontSize: '1.15rem', 
+                borderRadius: '50px', 
+                fontWeight: '900', 
+                letterSpacing: '0.05em',
+                background: 'transparent',
+                border: '2px solid var(--rubis-red)',
+                color: 'white',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(227, 6, 19, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'transparent';
+              }}
+            >
+              Book as Guest
             </button>
           </div>
         </div>

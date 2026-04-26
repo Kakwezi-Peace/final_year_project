@@ -4,6 +4,8 @@ import MainLayout from './components/MainLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import GuestRegister from './pages/GuestRegister';
+import GuestBooking from './pages/GuestBooking';
 import Dashboard from './pages/Dashboard';
 import Operations from './pages/Operations';
 import Analytics from './pages/Analytics';
@@ -12,6 +14,7 @@ import Queue from './pages/Queue';
 import Customers from './pages/Customers';
 import Employees from './pages/Employees';
 import ManagerDashboard from './pages/ManagerDashboard';
+import GuestBookingsList from './pages/GuestBookingsList';
 import { ThemeProvider } from './context/ThemeContext';
 import { SearchProvider } from './context/SearchContext';
 
@@ -37,7 +40,7 @@ const ProtectedRoute = ({ children, roles = [] }) => {
 const AppContent = () => {
   const location = useLocation();
   const token = localStorage.getItem('token');
-  const publicPaths = ['/', '/login', '/register'];
+  const publicPaths = ['/', '/login', '/register', '/guest-register', '/guest-booking'];
   const isPublic = !token || publicPaths.includes(location.pathname);
 
   const routes = (
@@ -45,8 +48,11 @@ const AppContent = () => {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/guest-register" element={<GuestRegister />} />
+      <Route path="/guest-booking" element={<GuestBooking />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/customers" element={<ProtectedRoute roles={['ADMIN', 'MANAGER', 'STAFF']}><Customers /></ProtectedRoute>} />
+      <Route path="/guest-bookings" element={<ProtectedRoute roles={['ADMIN', 'MANAGER', 'STAFF']}><GuestBookingsList /></ProtectedRoute>} />
       <Route path="/operations" element={<ProtectedRoute roles={['ADMIN', 'MANAGER', 'STAFF']}><Operations /></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute roles={['ADMIN', 'MANAGER', 'STAFF']}><Analytics /></ProtectedRoute>} />
       <Route path="/payments" element={<ProtectedRoute roles={['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER']}><PaymentsList /></ProtectedRoute>} />

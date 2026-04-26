@@ -39,6 +39,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status")
     long countByStatus(@Param("status") BookingStatus status);
 
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.createdAt BETWEEN :start AND :end")
+    long countByCreatedAtBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
     @Query("SELECT b FROM Booking b WHERE " +
            "(LOWER(b.bookingReference) LIKE LOWER(CONCAT('%',:q,'%')) OR " +
            "LOWER(b.customer.firstName) LIKE LOWER(CONCAT('%',:q,'%')) OR " +

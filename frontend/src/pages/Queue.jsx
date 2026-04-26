@@ -30,7 +30,7 @@ const Queue = () => {
     setLoading(true);
     try {
       const qParam = q ? `?q=${encodeURIComponent(q)}&` : '?';
-      const res = await api.get(`/bookings${qParam}page=${pageIdx}&size=50`);
+      const res = await api.get(`/bookings${qParam}page=${pageIdx}&size=50&sort=createdAt,desc`);
       const data = res.data;
       setBookings(data.content || []);
       setTotalPages(data.totalPages || 0);
@@ -280,8 +280,9 @@ const Queue = () => {
                    style={{ padding: '1.25rem', background: 'var(--surface-solid)', cursor: 'grab', border: '1px solid var(--border-white)' }}
                  >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                          <h4 style={{ fontWeight: '800', fontSize: '0.95rem' }}>{item.vehicleLicensePlate}</h4>
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <h4 style={{ fontWeight: '800', fontSize: '0.95rem' }}>{item.guestVehiclePlate || item.vehicleLicensePlate}</h4>
+                          {item.isGuest && <span style={{ fontSize: '0.6rem', background: 'rgba(168,85,247,0.15)', color: '#a855f7', padding: '0.15rem 0.5rem', borderRadius: '4px', fontWeight: '900', border: '1px solid rgba(168,85,247,0.3)' }}>GUEST</span>}
                        </div>
                        <span style={{ fontSize: '0.65rem', background: 'rgba(250,204,21,0.1)', color: '#facc15', padding: '0.2rem 0.4rem', borderRadius: '4px', fontWeight: '700' }}>{item.status}</span>
                     </div>
@@ -339,7 +340,8 @@ const Queue = () => {
                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <GripVertical size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                           <Car size={16} style={{ color: 'var(--rubis-red)' }} />
-                          <h4 style={{ fontWeight: '800', fontSize: '0.95rem' }}>{item.vehicleLicensePlate}</h4>
+                          <h4 style={{ fontWeight: '800', fontSize: '0.95rem' }}>{item.guestVehiclePlate || item.vehicleLicensePlate}</h4>
+                          {item.isGuest && <span style={{ fontSize: '0.6rem', background: 'rgba(168,85,247,0.15)', color: '#a855f7', padding: '0.15rem 0.5rem', borderRadius: '4px', fontWeight: '900', border: '1px solid rgba(168,85,247,0.3)' }}>GUEST</span>}
                        </div>
                        <span style={{ fontSize: '0.65rem', background: 'rgba(56,189,248,0.1)', color: '#38bdf8', padding: '0.2rem 0.4rem', borderRadius: '4px', fontWeight: '700' }}>● Washing</span>
                     </div>
@@ -388,7 +390,8 @@ const Queue = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', opacity: 0.7 }}>
                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <Car size={16} style={{ color: 'var(--text-muted)' }} />
-                          <h4 style={{ fontWeight: '800', fontSize: '0.95rem' }}>{item.vehicleLicensePlate}</h4>
+                          <h4 style={{ fontWeight: '800', fontSize: '0.95rem' }}>{item.guestVehiclePlate || item.vehicleLicensePlate}</h4>
+                          {item.isGuest && <span style={{ fontSize: '0.6rem', background: 'rgba(168,85,247,0.15)', color: '#a855f7', padding: '0.15rem 0.5rem', borderRadius: '4px', fontWeight: '900', border: '1px solid rgba(168,85,247,0.3)' }}>GUEST</span>}
                        </div>
                        <span style={{ fontSize: '0.65rem', background: 'rgba(22,163,74,0.1)', color: '#16a34a', padding: '0.2rem 0.4rem', borderRadius: '4px', fontWeight: '700' }}>● Done</span>
                     </div>

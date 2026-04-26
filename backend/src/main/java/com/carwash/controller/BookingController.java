@@ -2,6 +2,7 @@ package com.carwash.controller;
 
 import com.carwash.dto.BookingRequest;
 import com.carwash.dto.BookingResponse;
+import com.carwash.dto.GuestBookingRequest;
 import com.carwash.model.BookingStatus;
 import com.carwash.model.User;
 import com.carwash.service.BookingService;
@@ -33,13 +34,21 @@ public class BookingController {
 
 
     @PostMapping
-    @Operation(summary = "Create a new booking")
+    @Operation(summary = "Create a new booking (authenticated)")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<BookingResponse> createBooking(
             @Valid @RequestBody BookingRequest request,
             @AuthenticationPrincipal User currentUser) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(bookingService.createBooking(request, currentUser));
+    }
+
+    @PostMapping("/guest")
+    @Operation(summary = "Create a guest booking (no login required)")
+    public ResponseEntity<BookingResponse> createGuestBooking(
+            @Valid @RequestBody GuestBookingRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(bookingService.createGuestBooking(request));
     }
 
 
@@ -140,6 +149,13 @@ public class BookingController {
             @PathVariable Long id,
             @PathVariable Long employeeId) {
         return ResponseEntity.ok(bookingService.assignEmployee(id, employeeId));
+    }
+
+    @DeleteMapping("/{id}/assign-employee")
+    @Operation(summary = "Remove assigned employee from a booking (ADMIN/MANAGER)")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<BookingResponse> unassignEmployee(@PathVariable Long id) {
+        return ResponseEntity.ok(bookingService.unassignEmployee(id));
     }
 
     @PutMapping("/{id}")
