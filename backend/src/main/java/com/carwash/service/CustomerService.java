@@ -89,8 +89,18 @@ public class CustomerService {
     @Transactional
     public void deleteCustomer(Long id) {
         Customer customer = findById(id);
+        Long userId = customer.getUser() != null ? customer.getUser().getId() : null;
+
+        // Deleting the Customer cascades to all Bookings (→ Payments) and Vehicles
         customerRepository.delete(customer);
-        log.info("Customer deleted: id={}", id);
+        customerRepository.flush(); // ensure customer FK is removed before deleting User
+
+        // Remove the User account so the person cannot log in again
+        if (userId != null) {
+            userRepository.deleteById(userId);
+        }
+
+        log.info("Customer id={} fully purged: all bookings, vehicles, and user account deleted", id);
     }
 
     @Transactional

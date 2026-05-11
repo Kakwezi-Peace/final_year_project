@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Users, Search, UserPlus, Phone, Car,
   Trash2, Edit2, MoreVertical, LayoutGrid,
   Table, Filter, Mail, MapPin, X, Loader2,
   AlertCircle, CheckCircle2, FileDown, FileText, UserCheck, UserX,
-  ChevronDown, UserPlus2
+  ChevronDown, UserPlus2, Eye
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -17,6 +18,7 @@ import { useSearch } from '../context/SearchContext';
 const TH_STYLE = { padding: '0.7rem 1rem', color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em' };
 
 const CustomersList = () => {
+  const navigate = useNavigate();
   const { searchQuery, setSearchQuery } = useSearch();
   const [customers, setCustomers]             = useState([]);
   const [loading, setLoading]                 = useState(true);
@@ -486,12 +488,16 @@ const CustomersList = () => {
                         {currentPage * 10 + idx + 1}
                       </td>
                       <td style={{ padding: '0.7rem 1rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div
+                          onClick={() => navigate(`/customers/${customer.id}`)}
+                          style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}
+                          title="View customer details"
+                        >
                           <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(227,6,19,0.08)', color: 'var(--rubis-red)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', flexShrink: 0, fontSize: '0.8rem' }}>
                             {customer.fullName ? customer.fullName[0].toUpperCase() : '?'}
                           </div>
                           <div>
-                            <div style={{ fontWeight: '700', fontSize: '0.88rem' }}>{customer.fullName}</div>
+                            <div style={{ fontWeight: '700', fontSize: '0.88rem', color: 'var(--rubis-red)' }}>{customer.fullName}</div>
                             <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{customer.email}</div>
                           </div>
                         </div>
@@ -606,8 +612,13 @@ const CustomersList = () => {
                                       if (noBookings) return;
                                       if (dropdownOpen) { setAssignDropdownId(null); return; }
                                       const rect = e.currentTarget.getBoundingClientRect();
+                                      const DROPDOWN_H = 340;
+                                      const spaceBelow = window.innerHeight - rect.bottom - 8;
+                                      const top = spaceBelow >= DROPDOWN_H
+                                        ? rect.bottom + 6
+                                        : Math.max(8, rect.top - DROPDOWN_H - 6);
                                       setDropdownPos({
-                                        top: rect.bottom + 6,
+                                        top,
                                         left: Math.min(rect.left, window.innerWidth - 260),
                                       });
                                       setAssignDropdownId(customer.id);
@@ -640,6 +651,13 @@ const CustomersList = () => {
                       </td>
                       <td style={{ padding: '0.7rem 1rem', textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                          <button
+                            onClick={() => navigate(`/customers/${customer.id}`)}
+                            title="View customer details"
+                            style={{ color: '#4ade80', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: '6px', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          >
+                            <Eye size={15} />
+                          </button>
                           <button
                             onClick={() => downloadCustomerPDF(customer)}
                             disabled={customerPdfId === customer.id}

@@ -33,11 +33,12 @@ const Login = () => {
       
       // Role-Based Direct Navigation
       if (user.role === 'STAFF') {
-        navigate('/queue'); // Staff goes straight to work
+        // Staff land on their own profile page; fall back to queue if no employee record
+        navigate(user.employeeId ? `/employees/${user.employeeId}` : '/queue');
       } else if (user.role === 'ADMIN' || user.role === 'MANAGER') {
-        navigate('/dashboard'); // Management goes to reports
+        navigate('/dashboard');
       } else {
-        navigate('/dashboard'); // Customers see their status
+        navigate('/dashboard');
       }
     } catch (err) {
       console.error(err);

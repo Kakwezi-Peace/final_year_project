@@ -45,7 +45,7 @@ public class EmployeeService {
                     .email(request.getEmail())
                     .username(request.getEmail()) // use email as username
                     .fullName(request.getFirstName() + " " + request.getLastName())
-                    .password(passwordEncoder.encode("Carwash@2024")) // temporary default password
+                    .password(passwordEncoder.encode("Annet@25437")) // temporary default password
                     .role(Role.valueOf(request.getRole() != null ? request.getRole() : "STAFF"))
                     .phone(request.getPhone())
                     .enabled(true)
@@ -82,6 +82,10 @@ public class EmployeeService {
 
     public EmployeeResponse getEmployeeById(Long id) {
         return toResponse(findById(id));
+    }
+
+    public java.util.Optional<EmployeeResponse> getEmployeeByUserId(Long userId) {
+        return employeeRepository.findByUserId(userId).map(this::toResponse);
     }
 
     @Transactional
@@ -124,6 +128,36 @@ public class EmployeeService {
         log.info("Employee deleted: id={}", id);
     }
 
+    @Transactional
+    public java.util.Map<String, String> grantLoginAccess(Long id, String role) {
+        Employee employee = findById(id);
+        if (employee.getUser() != null) {
+            throw new RuntimeException("This employee already has a login account");
+        }
+        if (userRepository.existsByEmail(employee.getEmail())) {
+            throw new RuntimeException("A user with email '" + employee.getEmail() + "' already exists");
+        }
+        final String defaultPassword = "Annet@25437";
+        User user = User.builder()
+                .email(employee.getEmail())
+                .username(employee.getEmail())
+                .fullName(employee.getFullName())
+                .password(passwordEncoder.encode(defaultPassword))
+                .role(Role.valueOf(role != null && !role.isBlank() ? role : "STAFF"))
+                .phone(employee.getPhone())
+                .enabled(true)
+                .build();
+        user = userRepository.save(user);
+        employee.setUser(user);
+        employeeRepository.save(employee);
+        log.info("Login access granted to employee id={} with role={}", id, role);
+        return java.util.Map.of(
+                "username", employee.getEmail(),
+                "password", defaultPassword,
+                "role",     role != null && !role.isBlank() ? role : "STAFF"
+        );
+    }
+
     public Employee findById(Long id) {
         return employeeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Employee not found with id: " + id));
@@ -144,6 +178,7 @@ public class EmployeeService {
                 .statusChangedAt(e.getStatusChangedAt())
                 .expectedReturnDate(e.getExpectedReturnDate())
                 .createdAt(e.getCreatedAt())
+                .hasLoginAccount(e.getUser() != null)
                 .build();
     }
 }

@@ -42,11 +42,12 @@ const StatusBadge = ({ status }) => {
    CUSTOMER DASHBOARD
 ───────────────────────────────────────────────── */
 const CustomerDashboard = ({ profile, myCustomer, bookings, payments, allBookings, allPayments, totalBookings, totalPayments, bPage, setBPage,
-                              pPage, setPPage, handleEdit, handleCancel, showBookingModal,
+                              pPage, setPPage, handleEdit, handleCancel, handleRequestRefund, showBookingModal,
                               setShowBookingModal, bookingToEdit, setBookingToEdit, fetchData,
-                              onRequestDeletion, onCancelDeletion }) => {
+                              onRequestDeletion, onCancelDeletion, navigate }) => {
 
   const firstName = profile?.fullName?.split(' ')[0] || 'there';
+  const [filterStatus, setFilterStatus] = useState(null); // null = all, array = filtered
 
   /* Derive stats from all customer history for accurate metrics */
   const pending    = allBookings.filter(b => b.status === 'PENDING').length;
@@ -57,12 +58,18 @@ const CustomerDashboard = ({ profile, myCustomer, bookings, payments, allBooking
 
   const totalSpent = allPayments.reduce((s, p) => s + (p.amount || 0), 0);
 
+  // When a filter is active show ALL matching from history; otherwise show paginated page
+  const displayedBookings = filterStatus
+    ? allBookings.filter(b => filterStatus.includes(b.status))
+    : bookings;
+  const isFiltered = filterStatus !== null;
+
   const kpis = [
-    { label: 'My Bookings',      value: totalBookings,                          icon: ClipboardList, color: '#60a5fa', bg: 'rgba(96,165,250,0.1)',   border: 'rgba(96,165,250,0.25)' },
-    { label: 'Pending / Active', value: pending + confirmed + inProgress,       icon: Clock,         color: '#fbbf24', bg: 'rgba(251,191,36,0.1)',   border: 'rgba(251,191,36,0.25)' },
-    { label: 'Completed Washes', value: completed,                              icon: CheckCircle2,  color: '#4ade80', bg: 'rgba(74,222,128,0.1)',   border: 'rgba(74,222,128,0.25)' },
-    { label: 'Cancelled',        value: cancelled,                              icon: XCircle,       color: '#f87171', bg: 'rgba(248,113,113,0.1)',  border: 'rgba(248,113,113,0.25)' },
-    { label: 'Total Spent',      value: `${totalSpent.toLocaleString()} RWF`,   icon: Wallet,        color: '#c084fc', bg: 'rgba(192,132,252,0.1)',  border: 'rgba(192,132,252,0.25)' },
+    { label: 'My Bookings',      value: totalBookings,                        icon: ClipboardList, color: '#60a5fa', bg: 'rgba(96,165,250,0.1)',  border: 'rgba(96,165,250,0.25)', onClick: () => setFilterStatus(null),                                   isActive: false },
+    { label: 'Pending / Active', value: pending + confirmed + inProgress,     icon: Clock,         color: '#fbbf24', bg: 'rgba(251,191,36,0.1)',  border: 'rgba(251,191,36,0.25)', onClick: () => setFilterStatus(['PENDING','CONFIRMED','IN_PROGRESS']),   isActive: filterStatus?.includes('PENDING') },
+    { label: 'Completed Washes', value: completed,                            icon: CheckCircle2,  color: '#4ade80', bg: 'rgba(74,222,128,0.1)',  border: 'rgba(74,222,128,0.25)', onClick: () => setFilterStatus(['COMPLETED']),                           isActive: filterStatus?.includes('COMPLETED') },
+    { label: 'Cancelled',        value: cancelled,                            icon: XCircle,       color: '#f87171', bg: 'rgba(248,113,113,0.1)', border: 'rgba(248,113,113,0.25)',onClick: () => setFilterStatus(['CANCELLED']),                           isActive: filterStatus?.includes('CANCELLED') },
+    { label: 'Total Spent',      value: `${totalSpent.toLocaleString()} RWF`, icon: Wallet,        color: '#c084fc', bg: 'rgba(192,132,252,0.1)', border: 'rgba(192,132,252,0.25)',onClick: () => navigate('/payments'),                                   isActive: false },
   ];
 
   const paymentStatus = (s) => ({
@@ -106,14 +113,31 @@ const CustomerDashboard = ({ profile, myCustomer, bookings, payments, allBooking
       {/* KPI Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
         {kpis.map(k => (
-          <div key={k.label} className="glass-panel" style={{ padding: '1.4rem 1.6rem', border: `1px solid ${k.border}` }}>
+          <div
+            key={k.label}
+            className="glass-panel card-hover"
+            onClick={k.onClick}
+            title={k.label === 'Total Spent' ? 'View all payments' : k.isActive ? 'Click to clear filter' : `Filter bookings: ${k.label}`}
+            style={{
+              padding: '1.4rem 1.6rem',
+              border: `1px solid ${k.isActive ? k.color : k.border}`,
+              cursor: 'pointer',
+              outline: k.isActive ? `1px solid ${k.color}40` : 'none',
+              transition: 'all 0.15s',
+            }}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
-              <span style={{ fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-muted)' }}>{k.label}</span>
-              <div style={{ padding: '7px', background: k.bg, borderRadius: '9px', display: 'flex' }}>
+              <span style={{ fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.12em', color: k.isActive ? k.color : 'var(--text-muted)' }}>{k.label}</span>
+              <div style={{ padding: '7px', background: k.bg, borderRadius: '9px', display: 'flex', border: k.isActive ? `1px solid ${k.color}60` : '1px solid transparent' }}>
                 <k.icon size={16} color={k.color} />
               </div>
             </div>
             <div style={{ fontSize: '1.9rem', fontWeight: '900', color: k.color }}>{k.value}</div>
+            {k.isActive && (
+              <div style={{ marginTop: '6px', fontSize: '0.58rem', fontWeight: '900', color: k.color, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.8 }}>
+                ● Filtering — click to clear
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -141,26 +165,45 @@ const CustomerDashboard = ({ profile, myCustomer, bookings, payments, allBooking
 
       {/* My Bookings Table */}
       <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
           <h3 style={{ fontSize: '1.15rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '0.6rem', margin: 0 }}>
             <CalendarDays size={20} color="var(--rubis-red)" /> My Booking History
           </h3>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <button disabled={bPage === 0} onClick={() => setBPage(p => p - 1)}
-              style={{ background: 'var(--surface)', border: '1px solid var(--border-white)', color: 'var(--text-muted)', cursor: bPage === 0 ? 'default' : 'pointer', padding: '0.3rem 0.7rem', borderRadius: '6px', fontSize: '0.75rem', opacity: bPage === 0 ? 0.3 : 1 }}>
-              ← Prev
-            </button>
-            <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
-              Page {bPage + 1} of {Math.ceil(totalBookings / 5) || 1}
-            </span>
-            <button disabled={bookings.length < 5} onClick={() => setBPage(p => p + 1)}
-              style={{ background: 'var(--surface)', border: '1px solid var(--border-white)', color: 'var(--text-muted)', cursor: bookings.length < 5 ? 'default' : 'pointer', padding: '0.3rem 0.7rem', borderRadius: '6px', fontSize: '0.75rem', opacity: bookings.length < 5 ? 0.3 : 1 }}>
-              Next →
-            </button>
-          </div>
+          {!isFiltered && (
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <button disabled={bPage === 0} onClick={() => setBPage(p => p - 1)}
+                style={{ background: 'var(--surface)', border: '1px solid var(--border-white)', color: 'var(--text-muted)', cursor: bPage === 0 ? 'default' : 'pointer', padding: '0.3rem 0.7rem', borderRadius: '6px', fontSize: '0.75rem', opacity: bPage === 0 ? 0.3 : 1 }}>
+                ← Prev
+              </button>
+              <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
+                Page {bPage + 1} of {Math.ceil(totalBookings / 5) || 1}
+              </span>
+              <button disabled={bookings.length < 5} onClick={() => setBPage(p => p + 1)}
+                style={{ background: 'var(--surface)', border: '1px solid var(--border-white)', color: 'var(--text-muted)', cursor: bookings.length < 5 ? 'default' : 'pointer', padding: '0.3rem 0.7rem', borderRadius: '6px', fontSize: '0.75rem', opacity: bookings.length < 5 ? 0.3 : 1 }}>
+                Next →
+              </button>
+            </div>
+          )}
         </div>
 
-        {bookings.length === 0 ? (
+        {/* Active filter indicator */}
+        {isFiltered && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '600' }}>Showing:</span>
+            {filterStatus.map(s => (
+              <span key={s} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', padding: '3px 10px', borderRadius: '20px', fontSize: '0.68rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                {s.replace(/_/g, ' ')}
+              </span>
+            ))}
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>— {displayedBookings.length} result{displayedBookings.length !== 1 ? 's' : ''}</span>
+            <button onClick={() => setFilterStatus(null)}
+              style={{ marginLeft: '4px', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)', color: '#f87171', borderRadius: '6px', padding: '3px 10px', fontSize: '0.68rem', fontWeight: '800', cursor: 'pointer' }}>
+              × Clear Filter
+            </button>
+          </div>
+        )}
+
+        {displayedBookings.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
             <CalendarDays size={48} style={{ opacity: 0.2, marginBottom: '1rem' }} />
             <p style={{ fontWeight: '700' }}>No bookings yet</p>
@@ -177,7 +220,7 @@ const CustomerDashboard = ({ profile, myCustomer, bookings, payments, allBooking
                 </tr>
               </thead>
               <tbody>
-                {bookings.map(b => (
+                {displayedBookings.map(b => (
                   <tr key={b.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                     <td style={{ padding: '1.15rem 1rem', fontWeight: '800' }}>{b.vehicleLicensePlate}</td>
                     <td style={{ padding: '1.15rem 1rem', color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
@@ -213,9 +256,27 @@ const CustomerDashboard = ({ profile, myCustomer, bookings, payments, allBooking
                         {b.status === 'COMPLETED' && (
                           <span style={{ fontSize: '0.72rem', color: '#4ade80', fontWeight: '700' }}>✓ Done</span>
                         )}
-                        {b.status === 'CANCELLED' && (
-                          <span style={{ fontSize: '0.72rem', color: '#f87171', fontWeight: '700' }}>✗ Cancelled</span>
-                        )}
+                        {b.status === 'CANCELLED' && (() => {
+                          const payStatus = b.payment?.status;
+                          if (payStatus === 'PAID') {
+                            return (
+                              <button
+                                onClick={() => handleRequestRefund(b.id, b.bookingReference)}
+                                style={{ color: '#f97316', background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.3)', borderRadius: '7px', cursor: 'pointer', padding: '4px 10px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: '800' }}
+                                title="Request 90% refund (10% cancellation fee applies)"
+                              >
+                                <RefreshCw size={12} /> Request Refund
+                              </button>
+                            );
+                          }
+                          if (payStatus === 'REFUND_REQUESTED') {
+                            return <span style={{ fontSize: '0.72rem', color: '#f97316', fontWeight: '700' }}>⏳ Refund Pending</span>;
+                          }
+                          if (payStatus === 'REFUNDED') {
+                            return <span style={{ fontSize: '0.72rem', color: '#818cf8', fontWeight: '700' }}>✓ Refunded</span>;
+                          }
+                          return <span style={{ fontSize: '0.72rem', color: '#f87171', fontWeight: '700' }}>✗ Cancelled</span>;
+                        })()}
                       </div>
                     </td>
                   </tr>
@@ -402,8 +463,8 @@ const AdminDashboard = ({ profile, bookings, payments, stats, allBookings, allPa
   const guestBookingsCount = allBookings?.filter(b => b.isGuest || b.guest).length || 0;
 
   const kpis = [
-    { label: "Today's Cars",    value: stats?.todayCars     ?? '—', icon: Car,    bg: '#ef4444' },
-    { label: 'Revenue Today',   value: `${(stats?.todayRevenue || 0).toLocaleString()} RWF`, icon: Wallet, bg: '#10b981' },
+    { label: "Today's Cars",    value: stats?.todayCars     ?? '—', icon: Car,    bg: '#ef4444', path: '/operations' },
+    { label: 'Revenue Today',   value: `${(stats?.todayRevenue || 0).toLocaleString()} RWF`, icon: Wallet, bg: '#10b981', path: '/payments' },
     { label: 'Queue Length',    value: stats?.pendingBookings ?? '—', icon: Timer,  bg: '#3b82f6', path: '/queue' },
     { label: 'Total Customers', value: (stats?.totalCustomers || 0).toLocaleString(), icon: Users, bg: '#f59e0b', path: '/customers' },
     { label: 'Guest Bookings',  value: guestBookingsCount, icon: User, bg: '#8b5cf6', path: '/guest-bookings' },
@@ -625,11 +686,27 @@ const AdminDashboard = ({ profile, bookings, payments, stats, allBookings, allPa
                   <tbody>
                     {cancelled.map((b, i) => (
                       <tr key={b.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', background: i % 2 === 0 ? 'rgba(239,68,68,0.02)' : 'transparent' }}>
-                        <td style={{ padding: '0.9rem 1rem', fontWeight: '700', fontSize: '0.88rem' }}>{b.customerName || b.guestName || '—'}</td>
+                        <td style={{ padding: '0.9rem 1rem', fontWeight: '700', fontSize: '0.88rem' }}>
+                          {b.customerId ? (
+                            <Link
+                              to={`/customers/${b.customerId}`}
+                              style={{ color: 'var(--rubis-red)', fontWeight: '800', textDecoration: 'none' }}
+                              title="View customer details"
+                            >
+                              {b.customerName || '—'}
+                            </Link>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                              {b.guestName ? `Guest: ${b.guestName}` : '—'}
+                            </span>
+                          )}
+                        </td>
                         <td style={{ padding: '0.9rem 1rem', color: 'var(--rubis-red)', fontWeight: '800', fontSize: '0.85rem' }}>{b.vehicleLicensePlate || b.guestVehiclePlate || '—'}</td>
                         <td style={{ padding: '0.9rem 1rem', color: 'var(--text-muted)', fontSize: '0.82rem' }}>{b.serviceName || '—'}</td>
-                        <td style={{ padding: '0.9rem 1rem', color: 'var(--text-muted)', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
-                          {b.createdAt ? new Date(b.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                        <td style={{ padding: '0.9rem 1rem', color: '#f87171', fontSize: '0.82rem', whiteSpace: 'nowrap', fontWeight: '600' }}>
+                          {(b.updatedAt || b.createdAt)
+                            ? new Date(b.updatedAt || b.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                            : '—'}
                         </td>
                         <td style={{ padding: '0.9rem 1rem', fontSize: '0.8rem', color: 'var(--text-muted)', maxWidth: '200px' }}>
                           <span style={{ opacity: 0.8 }}>{b.notes || 'No reason provided'}</span>
@@ -824,6 +901,19 @@ const Dashboard = () => {
     catch (err) { alert('Delete failed: ' + (err.response?.data?.message || err.message)); }
   };
 
+  const handleRequestRefund = async (bookingId, bookingRef) => {
+    if (!window.confirm(
+      `Request a refund for booking ${bookingRef}?\n\nNote: A 10% cancellation fee will be deducted. You will receive 90% of the amount paid.\n\nThe admin/manager must approve your refund request before it is processed.`
+    )) return;
+    try {
+      await api.post(`/payments/booking/${bookingId}/request-refund`);
+      alert('Refund request submitted successfully. The admin will review and approve it shortly.');
+      fetchDashboardData(bPage, pPage);
+    } catch (err) {
+      alert('Refund request failed: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
   const handleRequestDeletion = async () => {
     if (!window.confirm('Are you sure you want to request account deletion? The admin will be notified and must approve before your account is removed.')) return;
     try {
@@ -849,7 +939,7 @@ const Dashboard = () => {
   const sharedProps = {
     profile, bookings, payments, allBookings, allPayments, stats,
     totalBookings, totalPayments, bPage, setBPage, pPage, setPPage,
-    handleEdit, handleCancel, showBookingModal, setShowBookingModal,
+    handleEdit, handleCancel, handleRequestRefund, showBookingModal, setShowBookingModal,
     bookingToEdit, setBookingToEdit, fetchData: fetchDashboardData,
     navigate,
   };

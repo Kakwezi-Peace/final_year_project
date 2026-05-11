@@ -25,4 +25,5 @@ public class EmployeeResponse {
     private LocalDateTime statusChangedAt;
     private LocalDateTime expectedReturnDate;
     private LocalDateTime createdAt;
+    private boolean hasLoginAccount;
 }

@@ -36,13 +36,16 @@ public class AuthService {
             throw new RuntimeException("Email '" + email + "' is already registered");
         }
 
+        // Public registration always produces a CUSTOMER account.
+        // STAFF / MANAGER / ADMIN accounts are created exclusively by admins
+        // via the employee onboarding flow (EmployeeService.createEmployee).
         User user = User.builder()
                 .username(username)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .fullName(request.getFullName())
                 .email(email)
                 .phone(request.getPhone())
-                .role(request.getRole() != null ? request.getRole() : Role.CUSTOMER)
+                .role(Role.CUSTOMER)
                 .enabled(true)
                 .build();
 

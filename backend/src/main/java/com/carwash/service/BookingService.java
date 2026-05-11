@@ -380,6 +380,37 @@ public class BookingService {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // GUEST DELETION REQUEST (no auth required — guests have no accounts)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public BookingResponse getGuestBookingByReference(String ref) {
+        Booking booking = bookingRepository.findByBookingReference(ref)
+                .orElseThrow(() -> new EntityNotFoundException("Booking not found with reference: " + ref));
+        if (!booking.isGuest()) {
+            throw new RuntimeException("This reference does not belong to a guest booking");
+        }
+        return toResponse(booking);
+    }
+
+    @Transactional
+    public BookingResponse requestGuestDeletion(String ref) {
+        Booking booking = bookingRepository.findByBookingReference(ref)
+                .orElseThrow(() -> new EntityNotFoundException("Booking not found with reference: " + ref));
+        if (!booking.isGuest()) {
+            throw new RuntimeException("Deletion requests are only for guest bookings");
+        }
+        if (booking.isDeletionRequested()) {
+            throw new RuntimeException("Deletion has already been requested for this booking");
+        }
+        booking.setDeletionRequested(true);
+        booking.setDeletionRequestedAt(LocalDateTime.now());
+        booking = bookingRepository.save(booking);
+        log.info("Guest deletion requested for booking: {}", ref);
+        return toResponse(booking);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // HELPERS
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -464,11 +495,14 @@ public class BookingService {
                 .totalAmount(b.getTotalAmount())
                 .notes(b.getNotes())
                 .createdAt(b.getCreatedAt())
+                .updatedAt(b.getUpdatedAt())
                 .payment(paymentSummary)
                 .isGuest(b.isGuest())
                 .guestName(b.getGuestName())
                 .guestPhone(b.getGuestPhone())
                 .guestVehiclePlate(b.getGuestVehiclePlate())
+                .deletionRequested(b.isDeletionRequested())
+                .deletionRequestedAt(b.getDeletionRequestedAt())
                 .build();
     }
 }

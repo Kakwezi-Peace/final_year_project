@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, ListOrdered,
   Activity, BarChart3, CreditCard,
   LogOut, UserCircle, Plus,
-  ChevronRight, ChevronDown, UsersRound, ShieldCheck
+  ChevronRight, ChevronDown, UsersRound, ShieldCheck, UserCog
 } from 'lucide-react';
 
 const Sidebar = ({ user }) => {
@@ -36,6 +36,7 @@ const Sidebar = ({ user }) => {
 
   const filtered = menuItems.filter(item => item.roles.includes(user.role));
   const showTeams = ['ADMIN', 'MANAGER'].includes(user.role);
+  const showMyProfile = user.role === 'STAFF' && user.employeeId;
 
   /* ─── Link style helper ─── */
   const linkStyle = (active, isBook = false) => ({
@@ -134,6 +135,22 @@ const Sidebar = ({ user }) => {
               <span>{item.name}</span>
             </Link>
           ))}
+
+          {/* ─── MY PROFILE (STAFF only) ─── */}
+          {showMyProfile && (
+            <div style={{ marginTop: '0.5rem' }}>
+              <p style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0.8rem 0.5rem 0.4rem', fontWeight: '800' }}>
+                My Account
+              </p>
+              <Link
+                to={`/employees/${user.employeeId}`}
+                style={linkStyle(location.pathname === `/employees/${user.employeeId}`)}
+              >
+                <UserCog size={15} />
+                <span>My Profile</span>
+              </Link>
+            </div>
+          )}
 
           {/* ─── TEAMS (nested accordion) ─── */}
           {showTeams && (

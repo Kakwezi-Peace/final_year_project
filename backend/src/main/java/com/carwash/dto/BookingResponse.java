@@ -35,6 +35,7 @@ public class BookingResponse {
     private BigDecimal totalAmount;
     private String notes;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private PaymentSummary payment;
 
     // Guest booking fields
@@ -42,6 +43,8 @@ public class BookingResponse {
     private String guestName;
     private String guestPhone;
     private String guestVehiclePlate;
+    private boolean deletionRequested;
+    private LocalDateTime deletionRequestedAt;
 
     @Data
     @Builder

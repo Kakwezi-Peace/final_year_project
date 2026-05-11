@@ -63,6 +63,10 @@ public class SecurityConfig {
                     "/actuator/health"
                 ).permitAll()
 
+                // Guest booking self-service: lookup + deletion request (no account needed)
+                .requestMatchers(HttpMethod.GET, "/api/bookings/guest-track/**").permitAll()
+                .requestMatchers(HttpMethod.PATCH, "/api/bookings/guest-track/**").permitAll()
+
                 // Service catalog – read is public, write requires ADMIN or MANAGER
                 .requestMatchers(HttpMethod.GET, "/api/services/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/services/**").hasAnyRole("ADMIN", "MANAGER")

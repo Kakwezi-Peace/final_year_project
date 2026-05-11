@@ -1,15 +1,57 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { CheckCircle2, Clock, Car, User, Phone, Calendar, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckCircle2, Clock, Car, User, Phone, Calendar, ArrowRight, Loader2, Search, Trash2, AlertTriangle } from 'lucide-react';
 
 const GuestBooking = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('book'); // 'book' | 'manage'
   const [step, setStep] = useState(1); // 1 = details, 2 = confirmation
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState('');
+
+  // ─── Manage booking state ─────────────────────────────────────────────────
+  const [manageRef, setManageRef] = useState('');
+  const [manageLoading, setManageLoading] = useState(false);
+  const [manageBooking, setManageBooking] = useState(null);
+  const [manageError, setManageError] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
+
+  const handleLookup = async (e) => {
+    e.preventDefault();
+    setManageError('');
+    setManageBooking(null);
+    setDeleteSuccess(false);
+    if (!manageRef.trim()) return;
+    setManageLoading(true);
+    try {
+      const { data } = await api.get(`/bookings/guest-track/${manageRef.trim().toUpperCase()}`);
+      setManageBooking(data);
+    } catch (err) {
+      setManageError(err.response?.data?.message || 'Booking not found. Please check the reference and try again.');
+    } finally {
+      setManageLoading(false);
+    }
+  };
+
+  const handleRequestDeletion = async () => {
+    if (!window.confirm(
+      `Request deletion of booking ${manageBooking.bookingReference}?\n\nThe admin/manager will review your request and permanently delete this booking.`
+    )) return;
+    setDeleteLoading(true);
+    try {
+      const { data } = await api.patch(`/bookings/guest-track/${manageBooking.bookingReference}/request-deletion`);
+      setManageBooking(data);
+      setDeleteSuccess(true);
+    } catch (err) {
+      setManageError(err.response?.data?.message || 'Failed to submit deletion request. Please try again.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   const [form, setForm] = useState({
     guestName: '',
@@ -199,6 +241,22 @@ const GuestBooking = () => {
       <div style={{ flex: '0 0 540px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', background: 'var(--bg-secondary)', overflowY: 'auto' }}>
         <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '440px' }}>
 
+          {/* Tab switcher */}
+          <div style={{ display: 'flex', gap: '0', marginBottom: '2rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '4px' }}>
+            {[{ key: 'book', label: 'Book Now' }, { key: 'manage', label: 'Manage Booking' }].map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                style={{
+                  flex: 1, padding: '0.6rem', borderRadius: '9px', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '0.85rem', transition: 'all 0.15s',
+                  background: activeTab === tab.key ? (tab.key === 'manage' ? 'rgba(239,68,68,0.18)' : 'var(--rubis-red)') : 'transparent',
+                  color: activeTab === tab.key ? (tab.key === 'manage' ? '#f87171' : 'white') : 'var(--text-muted)',
+                }}
+              >{tab.label}</button>
+            ))}
+          </div>
+
+          {activeTab === 'book' && <>
           <div style={{ marginBottom: '2rem' }}>
             <h2 style={{ fontSize: '2rem', fontWeight: '900', marginBottom: '0.5rem' }}>Guest Booking</h2>
             <p style={{ color: 'var(--text-secondary)' }}>Fill in your details to reserve your slot</p>
@@ -354,6 +412,119 @@ const GuestBooking = () => {
               {loading ? <><Loader2 size={18} className="animate-spin" /> Processing...</> : <> Confirm Booking <ArrowRight size={18} /></>}
             </button>
           </form>
+          </>}
+
+          {/* ── MANAGE BOOKING TAB ── */}
+          {activeTab === 'manage' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div>
+                <h2 style={{ fontSize: '2rem', fontWeight: '900', marginBottom: '0.5rem' }}>Manage Booking</h2>
+                <p style={{ color: 'var(--text-secondary)' }}>Enter your booking reference to look up and manage your reservation</p>
+              </div>
+
+              {/* Reference lookup form */}
+              <form onSubmit={handleLookup} style={{ display: 'flex', gap: '0.75rem' }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <Search size={16} style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <input
+                    type="text"
+                    placeholder="e.g. CW-20240519-AB12"
+                    value={manageRef}
+                    onChange={e => { setManageRef(e.target.value); setManageBooking(null); setManageError(''); setDeleteSuccess(false); }}
+                    className="input-field"
+                    style={{ height: '48px', paddingLeft: '2.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={manageLoading || !manageRef.trim()}
+                  style={{ height: '48px', padding: '0 1.25rem', borderRadius: '10px', fontWeight: '800', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  {manageLoading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+                  Look Up
+                </button>
+              </form>
+
+              {manageError && (
+                <div className="alert alert-error" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <AlertTriangle size={16} /> {manageError}
+                </div>
+              )}
+
+              {/* Booking details card */}
+              {manageBooking && (
+                <div className="glass-panel" style={{ padding: '1.5rem', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' }}>Booking Reference</div>
+                      <div style={{ fontWeight: '900', color: 'var(--rubis-red)', fontSize: '1rem' }}>{manageBooking.bookingReference}</div>
+                    </div>
+                    <span style={{
+                      padding: '4px 12px', borderRadius: '50px', fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.06em',
+                      background: manageBooking.status === 'CANCELLED' ? 'rgba(239,68,68,0.12)' : manageBooking.status === 'COMPLETED' ? 'rgba(34,197,94,0.12)' : 'rgba(234,179,8,0.12)',
+                      color: manageBooking.status === 'CANCELLED' ? '#f87171' : manageBooking.status === 'COMPLETED' ? '#4ade80' : '#facc15',
+                      border: `1px solid ${manageBooking.status === 'CANCELLED' ? 'rgba(239,68,68,0.3)' : manageBooking.status === 'COMPLETED' ? 'rgba(34,197,94,0.3)' : 'rgba(234,179,8,0.3)'}`,
+                    }}>
+                      {manageBooking.status?.replace('_', ' ')}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem', marginBottom: '1.25rem' }}>
+                    {[
+                      { label: 'Name', value: manageBooking.guestName },
+                      { label: 'Phone', value: manageBooking.guestPhone },
+                      { label: 'Vehicle', value: manageBooking.guestVehiclePlate },
+                      { label: 'Service', value: manageBooking.serviceName },
+                      { label: 'Amount', value: `${(manageBooking.totalAmount || 0).toLocaleString()} RWF` },
+                      { label: 'Scheduled', value: manageBooking.scheduledAt ? new Date(manageBooking.scheduledAt).toLocaleDateString() : '—' },
+                    ].map(({ label, value }) => (
+                      <div key={label}>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '2px' }}>{label}</div>
+                        <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>{value || '—'}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Deletion request section */}
+                  {deleteSuccess || manageBooking.deletionRequested ? (
+                    <div style={{ background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.3)', borderRadius: '10px', padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                      <Clock size={18} color="#facc15" style={{ flexShrink: 0, marginTop: '1px' }} />
+                      <div>
+                        <div style={{ fontWeight: '800', color: '#facc15', fontSize: '0.85rem', marginBottom: '3px' }}>Deletion Request Submitted</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                          Your request has been received. An admin or manager will review and permanently delete this booking.
+                          {manageBooking.deletionRequestedAt && (
+                            <span style={{ display: 'block', marginTop: '4px', color: 'var(--text-muted)', fontSize: '0.72rem' }}>
+                              Requested: {new Date(manageBooking.deletionRequestedAt).toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', padding: '0.85rem', marginBottom: '0.85rem', display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
+                        <AlertTriangle size={15} color="#f87171" style={{ flexShrink: 0, marginTop: '1px' }} />
+                        <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+                          Requesting deletion is permanent. The admin/manager will review your request and remove the booking from the system.
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleRequestDeletion}
+                        disabled={deleteLoading}
+                        className="btn"
+                        style={{ width: '100%', height: '46px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', color: '#f87171', borderRadius: '10px', fontWeight: '800', cursor: deleteLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', fontSize: '0.9rem' }}
+                      >
+                        {deleteLoading ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                        {deleteLoading ? 'Submitting...' : 'Request Deletion of This Booking'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
         </div>
       </div>

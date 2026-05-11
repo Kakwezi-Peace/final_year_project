@@ -15,6 +15,8 @@ import Customers from './pages/Customers';
 import Employees from './pages/Employees';
 import ManagerDashboard from './pages/ManagerDashboard';
 import GuestBookingsList from './pages/GuestBookingsList';
+import CustomerDetail from './pages/CustomerDetail';
+import EmployeeDetail from './pages/EmployeeDetail';
 import { ThemeProvider } from './context/ThemeContext';
 import { SearchProvider } from './context/SearchContext';
 
@@ -52,12 +54,14 @@ const AppContent = () => {
       <Route path="/guest-booking" element={<GuestBooking />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/customers" element={<ProtectedRoute roles={['ADMIN', 'MANAGER', 'STAFF']}><Customers /></ProtectedRoute>} />
+      <Route path="/customers/:id" element={<ProtectedRoute roles={['ADMIN', 'MANAGER', 'STAFF']}><CustomerDetail /></ProtectedRoute>} />
       <Route path="/guest-bookings" element={<ProtectedRoute roles={['ADMIN', 'MANAGER', 'STAFF']}><GuestBookingsList /></ProtectedRoute>} />
       <Route path="/operations" element={<ProtectedRoute roles={['ADMIN', 'MANAGER', 'STAFF']}><Operations /></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute roles={['ADMIN', 'MANAGER', 'STAFF']}><Analytics /></ProtectedRoute>} />
       <Route path="/payments" element={<ProtectedRoute roles={['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER']}><PaymentsList /></ProtectedRoute>} />
       <Route path="/queue" element={<ProtectedRoute roles={['ADMIN', 'MANAGER', 'STAFF']}><Queue /></ProtectedRoute>} />
       <Route path="/employees" element={<ProtectedRoute roles={['ADMIN', 'MANAGER']}><Employees /></ProtectedRoute>} />
+      <Route path="/employees/:id" element={<ProtectedRoute roles={['ADMIN', 'MANAGER', 'STAFF']}><EmployeeDetail /></ProtectedRoute>} />
       <Route path="/manager/dashboard" element={<ProtectedRoute roles={['ADMIN', 'MANAGER']}><ManagerDashboard /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

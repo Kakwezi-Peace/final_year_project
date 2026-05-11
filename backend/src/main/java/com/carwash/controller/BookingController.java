@@ -90,6 +90,18 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getBookingByReference(ref, currentUser));
     }
 
+    @GetMapping("/guest-track/{ref}")
+    @Operation(summary = "Look up a guest booking by reference (no login required)")
+    public ResponseEntity<BookingResponse> getGuestBookingByRef(@PathVariable String ref) {
+        return ResponseEntity.ok(bookingService.getGuestBookingByReference(ref));
+    }
+
+    @PatchMapping("/guest-track/{ref}/request-deletion")
+    @Operation(summary = "Guest requests deletion of their booking (no login required)")
+    public ResponseEntity<BookingResponse> requestGuestDeletion(@PathVariable String ref) {
+        return ResponseEntity.ok(bookingService.requestGuestDeletion(ref));
+    }
+
     @GetMapping("/customer/{customerId}")
     @Operation(summary = "Get all bookings for a specific customer (ADMIN/STAFF)")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")

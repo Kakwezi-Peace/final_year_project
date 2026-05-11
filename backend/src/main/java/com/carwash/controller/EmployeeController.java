@@ -13,9 +13,11 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/employees")
@@ -38,6 +40,16 @@ public class EmployeeController {
     public ResponseEntity<Page<EmployeeResponse>> getAllEmployees(
             @PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(employeeService.getAllEmployees(pageable));
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "Get the currently logged-in staff member's own employee profile")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
+    public ResponseEntity<EmployeeResponse> getMyProfile(
+            @AuthenticationPrincipal com.carwash.model.User currentUser) {
+        return employeeService.getEmployeeByUserId(currentUser.getId())
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/active")
@@ -75,6 +87,15 @@ public class EmployeeController {
             parsedReturnDate = java.time.LocalDateTime.parse(returnDate);
         }
         return ResponseEntity.ok(employeeService.toggleStatus(id, active, parsedReturnDate));
+    }
+
+    @PostMapping("/{id}/grant-login")
+    @Operation(summary = "Grant login access to an existing employee who has no account yet")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<Map<String, String>> grantLoginAccess(
+            @PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "STAFF") String role) {
+        return ResponseEntity.ok(employeeService.grantLoginAccess(id, role));
     }
 
     @DeleteMapping("/{id}")

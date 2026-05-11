@@ -80,6 +80,12 @@ public class Booking {
 
     @Column(name = "guest_vehicle_plate", length = 50)
     private String guestVehiclePlate;
+
+    @Column(name = "deletion_requested", nullable = false, columnDefinition = "boolean default false")
+    private boolean deletionRequested = false;
+
+    @Column(name = "deletion_requested_at")
+    private LocalDateTime deletionRequestedAt;
     // ───────────────────────────────────────────────────────────────────────────
 
     @Column(updatable = false)

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Search, CheckCircle2, User, Trash2,
-  UserCheck, UserPlus2, ChevronDown, Loader2, AlertCircle, X, UserX,
+  UserCheck, UserPlus2, ChevronDown, Loader2, AlertCircle, X, UserX, Clock,
 } from 'lucide-react';
 import api from '../services/api';
 import Pagination from '../components/Pagination';
@@ -182,7 +182,7 @@ const GuestBookingsList = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    <th style={TH}>Reference</th>
+                    <th style={TH}>Reference / Request</th>
                     <th style={TH}>Guest Info</th>
                     <th style={TH}>Vehicle Plate</th>
                     <th style={TH}>Service</th>
@@ -209,8 +209,18 @@ const GuestBookingsList = () => {
                     return (
                       <tr key={b.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }} className="card-hover">
 
-                        {/* Reference */}
-                        <td style={{ padding: '1.15rem 1rem', fontWeight: '800', fontSize: '0.85rem', color: 'var(--rubis-red)' }}>{b.bookingReference}</td>
+                        {/* Reference + deletion request badge */}
+                        <td style={{ padding: '1.15rem 1rem' }}>
+                          <div style={{ fontWeight: '800', fontSize: '0.85rem', color: 'var(--rubis-red)', marginBottom: b.deletionRequested ? '6px' : 0 }}>
+                            {b.bookingReference}
+                          </div>
+                          {b.deletionRequested && (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '50px', padding: '3px 10px', fontSize: '0.65rem', fontWeight: '900', color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                              <Clock size={10} />
+                              Deletion Requested
+                            </div>
+                          )}
+                        </td>
 
                         {/* Guest info */}
                         <td style={{ padding: '1.15rem 1rem' }}>
@@ -298,12 +308,29 @@ const GuestBookingsList = () => {
                           </td>
                         )}
 
-                        {/* Delete */}
+                        {/* Delete — only enabled after guest requests deletion */}
                         <td style={{ padding: '1.15rem 1rem' }}>
-                          <button onClick={() => handleDelete(b.id)} title="Delete Guest Booking"
-                            style={{ color: '#f87171', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: '6px', cursor: 'pointer', padding: '5px', display: 'flex' }}>
-                            <Trash2 size={15} />
-                          </button>
+                          {b.deletionRequested ? (
+                            <button
+                              onClick={() => handleDelete(b.id)}
+                              title={`Delete — requested ${b.deletionRequestedAt ? new Date(b.deletionRequestedAt).toLocaleString() : ''}`}
+                              style={{ color: '#f87171', background: 'rgba(248,113,113,0.15)', border: '1px solid rgba(248,113,113,0.4)', borderRadius: '6px', cursor: 'pointer', padding: '5px', display: 'flex' }}
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          ) : (
+                            <div title="Guest has not requested deletion yet" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+                              <button
+                                disabled
+                                style={{ color: 'rgba(148,163,184,0.35)', background: 'rgba(148,163,184,0.05)', border: '1px solid rgba(148,163,184,0.12)', borderRadius: '6px', cursor: 'not-allowed', padding: '5px', display: 'flex' }}
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                              <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', fontWeight: '700', textAlign: 'center', maxWidth: '70px', lineHeight: 1.2 }}>
+                                Awaiting request
+                              </span>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     );

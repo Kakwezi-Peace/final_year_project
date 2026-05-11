@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Activity, Clock, Users, CheckCircle2, 
-  Car, User, Loader2, Edit3, XCircle, DollarSign, 
+import { useNavigate } from 'react-router-dom';
+import {
+  Activity, Clock, Users, CheckCircle2,
+  Car, User, Loader2, Edit3, XCircle, DollarSign,
   ListOrdered, Play, Trash2, RefreshCw, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import api from '../services/api';
 import Pagination from '../components/Pagination';
 
 const Operations = () => {
+  const navigate = useNavigate();
   const [activeWashes, setActiveWashes] = useState([]);
   const [completedWashes, setCompletedWashes] = useState([]);
   const [queuedBookings, setQueuedBookings] = useState([]);
@@ -131,57 +133,57 @@ const Operations = () => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
             
             {/* Active Washes */}
-            <div className="glass-panel" style={{ padding: '1.5rem', background: 'var(--surface)', borderLeft: '6px solid #2563eb' }}>
+            <div className="glass-panel card-hover" onClick={() => navigate('/queue')} title="View queue" style={{ padding: '1.5rem', background: 'var(--surface)', borderLeft: '6px solid #2563eb', cursor: 'pointer' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                  <div>
                    <div style={{ fontSize: '2rem', fontWeight: '800' }}>{stats?.inProgressBookings ?? activeWashes.length}</div>
                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', marginTop: '0.25rem' }}>Active Washes</div>
                  </div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ACTIVE</div>
+                 <div style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ACTIVE</div>
               </div>
             </div>
 
             {/* Completed Today */}
-            <div className="glass-panel" style={{ padding: '1.5rem', background: 'var(--surface)', borderLeft: '6px solid #6366f1' }}>
+            <div className="glass-panel card-hover" onClick={() => navigate('/queue')} title="View completed bookings" style={{ padding: '1.5rem', background: 'var(--surface)', borderLeft: '6px solid #6366f1', cursor: 'pointer' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                  <div>
                    <div style={{ fontSize: '2rem', fontWeight: '800' }}>{completedToday.length}</div>
                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', marginTop: '0.25rem' }}>Completed Today</div>
                  </div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>DONE</div>
+                 <div style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>DONE</div>
               </div>
             </div>
 
             {/* Pending Queue */}
-            <div className="glass-panel" style={{ padding: '1.5rem', background: 'var(--surface)', borderLeft: '6px solid #d97706' }}>
+            <div className="glass-panel card-hover" onClick={() => navigate('/queue')} title="View pending queue" style={{ padding: '1.5rem', background: 'var(--surface)', borderLeft: '6px solid #d97706', cursor: 'pointer' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                  <div>
                    <div style={{ fontSize: '2rem', fontWeight: '800' }}>{stats?.pendingBookings ?? pendingWashes.length}</div>
                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', marginTop: '0.25rem' }}>Pending Queue</div>
                  </div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>QUEUE</div>
+                 <div style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>QUEUE</div>
               </div>
             </div>
 
             {/* Today's Revenue */}
-            <div className="glass-panel" style={{ padding: '1.5rem', background: 'var(--surface)', borderLeft: '6px solid #10b981' }}>
+            <div className="glass-panel card-hover" onClick={() => navigate('/payments')} title="View all payments" style={{ padding: '1.5rem', background: 'var(--surface)', borderLeft: '6px solid #10b981', cursor: 'pointer' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                  <div>
                    <div style={{ fontSize: '2rem', fontWeight: '800' }}>{(stats?.todayRevenue || todayRevenue).toLocaleString()}</div>
                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', marginTop: '0.25rem' }}>Today Revenue (RWF)</div>
                  </div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>RWF</div>
+                 <div style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>RWF</div>
               </div>
             </div>
 
             {/* Staff On Duty */}
-            <div className="glass-panel" style={{ padding: '1.5rem', borderLeft: '6px solid #6366f1' }}>
+            <div className="glass-panel card-hover" onClick={() => navigate('/employees')} title="View all employees" style={{ padding: '1.5rem', borderLeft: '6px solid #6366f1', cursor: 'pointer' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                  <div>
                    <div style={{ fontSize: '2rem', fontWeight: '800' }}>{stats?.totalEmployees ?? employees.length}</div>
                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', marginTop: '0.25rem' }}>Staff On Duty</div>
                  </div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>STAFF</div>
+                 <div style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>STAFF</div>
               </div>
             </div>
           </div>

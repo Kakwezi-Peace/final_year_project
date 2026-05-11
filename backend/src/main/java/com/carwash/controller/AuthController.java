@@ -6,6 +6,7 @@ import com.carwash.dto.RegisterRequest;
 import com.carwash.model.Role;
 import com.carwash.model.User;
 import com.carwash.repository.CustomerRepository;
+import com.carwash.repository.EmployeeRepository;
 import com.carwash.repository.UserRepository;
 import com.carwash.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +29,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final CustomerRepository customerRepository;
+    private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
 
     @PostMapping("/register")
@@ -62,6 +64,12 @@ public class AuthController {
         if (user.getRole() == Role.CUSTOMER) {
             customerRepository.findByUserId(user.getId())
                 .ifPresent(c -> response.put("customerId", c.getId()));
+        }
+
+        // Include employee profile ID for STAFF role so frontend can redirect to their own page
+        if (user.getRole() == Role.STAFF) {
+            employeeRepository.findByUserId(user.getId())
+                .ifPresent(e -> response.put("employeeId", e.getId()));
         }
 
         return ResponseEntity.ok(response);

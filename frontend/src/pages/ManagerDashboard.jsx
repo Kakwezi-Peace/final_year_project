@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import {
   Users, CheckCircle2, XCircle, TrendingUp,
@@ -26,6 +27,7 @@ const fmtReturn = (iso) => {
 };
 
 const ManagerDashboard = () => {
+  const navigate = useNavigate();
   const [allStaff, setAllStaff]         = useState([]);
   const [activeStaff, setActiveStaff]   = useState([]);
   const [loading, setLoading]           = useState(true);
@@ -256,7 +258,13 @@ const ManagerDashboard = () => {
       {/* ── KPI Cards ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
         {statCards.map(s => (
-          <div key={s.label} className="glass-panel" style={{ padding: '1.25rem 1.5rem', border: `1px solid ${s.border}` }}>
+          <div
+            key={s.label}
+            className="glass-panel card-hover"
+            onClick={() => navigate('/employees')}
+            title="View all employees"
+            style={{ padding: '1.25rem 1.5rem', border: `1px solid ${s.border}`, cursor: 'pointer', transition: 'all 0.15s' }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
               <span style={{ fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-muted)' }}>{s.label}</span>
               <div style={{ padding: '6px', background: s.bg, borderRadius: '8px', display: 'flex' }}>
@@ -314,7 +322,10 @@ const ManagerDashboard = () => {
                 {filtered.map(emp => {
                   const returnOverdue = emp.expectedReturnDate && new Date(emp.expectedReturnDate) < new Date() && !emp.active;
                   return (
-                    <tr key={emp.id} className="table-row-hover" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', transition: 'background 0.2s' }}>
+                    <tr key={emp.id} className="table-row-hover"
+                      style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', transition: 'background 0.2s', cursor: 'pointer' }}
+                      onClick={(e) => { if (!e.target.closest('button')) navigate(`/employees/${emp.id}`); }}
+                    >
 
                       {/* Employee */}
                       <td style={{ padding: '1.1rem 0.85rem' }}>

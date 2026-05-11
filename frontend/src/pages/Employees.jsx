@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import EmployeeModal from '../components/EmployeeModal';
 import Pagination from '../components/Pagination';
 import { useSearch } from '../context/SearchContext';
 
 const Employees = () => {
+  const navigate = useNavigate();
   const { searchQuery, setSearchQuery } = useSearch();
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -123,7 +125,10 @@ const Employees = () => {
               </thead>
               <tbody>
                 {filteredEmployees.map(emp => (
-                  <tr key={emp.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', transition: 'background 0.2s' }} className="table-row-hover">
+                  <tr key={emp.id} className="table-row-hover"
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', transition: 'background 0.2s', cursor: 'pointer' }}
+                    onClick={(e) => { if (!e.target.closest('button')) navigate(`/employees/${emp.id}`); }}
+                  >
                     <td style={{ padding: '1.25rem 1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <div style={{ 
